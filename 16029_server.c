@@ -12,7 +12,7 @@ void main(int argc, char* argv[])
     
     //Check if command line arguments have been provided
     //Extract port number
-    if(argc < 2) {
+    if (argc < 2) {
         fprintf(stdout, "USAGE : %s port", argv[0]);
     }
     sock_port = atoi(argv[2]);
@@ -20,7 +20,7 @@ void main(int argc, char* argv[])
 
     //Create the socket
     sock_id = socket(AF_INET, SOCK_STREAM, 0);
-    if(sock_id < 0) {
+    if (sock_id < 0) {
         fprintf(stderr, "COULD NOT OPEN SOCKET\n");
         return;
     }
@@ -29,7 +29,10 @@ void main(int argc, char* argv[])
     sock_addr.sin_family = AF_INET;
     sock_addr.sin_port = htons(sock_port);
     sock_addr.sin_addr.s_addr = htonl(INADDR_ANY);
-    if
+    if (bind(sock_id, (struct sockaddr*) &sock_addr, sizeof(sock_addr)) == 1) {
+        fprintf(stderr, "ERROR IN BINDING SOCKET");
+    }
+
     
     
 }
