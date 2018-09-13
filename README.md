@@ -1,6 +1,9 @@
 # CN
 ## Compilation
-    type `make`
+    To compile the c files
+    ```
+    make
+    ```
 ## Running the server
     `./server <port>`
     The server will start on the system 0.0.0.0:<port>
