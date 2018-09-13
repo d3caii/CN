@@ -1,17 +1,15 @@
 # CN
 ## Compilation
-    To compile the c files
-    ```
+    To compile the c files:
     make
-    ```
 ## Running the server
-    `./server <port>`
+    ./server <port>
     The server will start on the system 0.0.0.0:<port>
-### Exiting
-    `quit_server`
+## Exiting Server
+    quit_server
 ## Connecting to the server(Running the Client)
-    `./client <server ip> <port>`
+    ./client <server ip> <port>
     You will need to kow the ip of the machine hosting the server as well as the port
-### Exiting
-    `quit`
+## Exiting Client
+    quit
 
