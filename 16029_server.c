@@ -13,6 +13,7 @@
 #define max_clients 10
 
 int clients[max_clients];
+pthread_t client_threads[max_clients];
 int current_clients = 0;
 int accept_id, input_thread_id;
 pthread_t accept_thread, input_thread;
@@ -20,6 +21,7 @@ struct sockaddr_in master, client;
 
 void *accept_conn(void *file_descriptor);
 void *server_input(void *file_descriptor);
+void *client_listener(void *index_no);
 
 void main(int argc, char* argv[])
 {
@@ -53,11 +55,15 @@ void main(int argc, char* argv[])
         fprintf(stdout, "ERROR IN BINDING SOCKET\n");
         return;
     }
+    for(int i=0; i<max_clients; i++)
+        clients[i] = -1;
+
     accept_id = pthread_create(&accept_thread, NULL, accept_conn, (void *)&master_id);
     input_thread_id = pthread_create(&input_thread, NULL, server_input, (void *)&master_id);
 
     pthread_join(accept_thread, NULL);
     pthread_join(input_thread, NULL);
+    printf("EXITING\n");
     exit(0);
     // if(listen(master_id, 4) < 0) {
     //     fprintf(stdout, "COULD NOT LISTEN ON SOCKET\n");
@@ -81,8 +87,21 @@ void *accept_conn(void *file_descriptor) {
     while (1) {
         int len = sizeof(master);
         client_id = accept(fd, (struct sockaddr*)&master, &len);
-        recv(client_id, message, 256, 0);
-        printf("%s\n", message);
+        if(current_clients<max_clients) {
+            for (int i=0; i<max_clients; i++) { 
+                if (clients[i] <0) {
+                    clients[i] = client_id;
+                    if(pthread_create(&client_threads[i], NULL, client_listener, (void *)&i) == 0) {
+                        current_clients++;
+                    }
+                    break;
+                }
+            }
+        }
+        else {
+            // close(client_id);
+            current_clients--;
+        }
     }
 
 }
@@ -94,7 +113,7 @@ void *server_input(void *file_descriptor) {
     while (1) {
         memset(input, '\0', 30);
         fgets(input, 30, stdin);
-        if(strcmp(input, "quit\n") == 0) {
+        if(strcmp(input, "quit_server\n") == 0) {
             printf("SHUTTING DOWN THE SERVER\n");
             pthread_cancel(accept_thread);
             pthread_cancel(input_thread);
@@ -105,4 +124,32 @@ void *server_input(void *file_descriptor) {
         }
     }
     return NULL;
+}
+
+void *client_listener(void *index_no) {
+    int i = *((int *) index_no);
+    char input[256];
+    printf("Creating new thread id : %d\n", clients[i]);
+    while(1) {
+        memset(input, '\0', 256);
+        int ret = recv(clients[i], input, 256, 0);
+        printf("%d\n", ret);
+        if ( ret <= 0 ) {
+            int tmp = clients[i];
+            clients[i] = -1;
+            close(tmp);
+            printf("Cancel pthread\n");
+            pthread_cancel(pthread_self());
+            pthread_exit(NULL);
+            break;
+        }
+        else {
+            printf("%s\n", input);
+            for(int i=0; i<max_clients; i++) {
+                if(clients[i] > 0){
+                    send(clients[i], input, 256, 0);
+                }
+            }
+        }
+    }
 }

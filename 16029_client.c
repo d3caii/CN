@@ -1,9 +1,9 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
 #include <string.h>
 #include <pthread.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
 
 #define maxsize 256
 #define KNRM  "\x1B[0m"
@@ -53,18 +53,20 @@ void main(int argc, char* argv[])
 void *send_message(void *file_descriptor) {
     int fd = *((int *) file_descriptor);
     char message[maxsize];
-    char *exit_string = "quit\n";
     
     while(1) {
         memset(message, '\0', maxsize);
         fgets(message, maxsize, stdin);
-        if (strcmp(message, exit_string) == 0){
+        if (strcmp(message, "quit\n") == 0){
+            exit(0);
+            close(fd);
             pthread_cancel(recv_msg);
             pthread_cancel(send_msg);
             break;
         }
         if(send(fd, message, maxsize, 0) <= 0) {
             printf("ERROR IN SENDING MESSAGE\n");
+            close(fd);
             pthread_cancel(recv_msg);
             pthread_cancel(send_msg);
             break;
@@ -80,6 +82,7 @@ void *recv_message(void *file_descriptor) {
     while(1) {
         memset(message, '\0', maxsize);
         if(recv(fd, message, maxsize, 0) <= 0) {
+            close(fd);
             pthread_cancel(send_msg);
             pthread_cancel(recv_msg);
             break;
