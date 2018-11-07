@@ -42,6 +42,8 @@ public class LinkState {
 
 		noOfNodes = findNoOfNodes();
 
+
+
 		// nodes = new int[][]
 		// 		{	{0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
 		// 			{0, 0, 4, 0, 0, 0, 0, 0, 8, 0}, 
@@ -75,10 +77,26 @@ public class LinkState {
 		sourceNode = Integer.parseInt(in.readLine());
 		hasBeenSelected[sourceNode] = 1;
 
+		for(int i=1; i<=noOfNodes; i++){
+			nodes[0][i] = nodes[sourceNode][i];
+		}
+		for(int i=1; i<=noOfNodes; i++){
+			if(i == sourceNode)
+				nodes[i][0] = 0;
+			else if(nodes[0][i] == -1)
+				nodes[i][0] = -1;
+			else
+				nodes[i][0] = i;
+		}
+
 		dijksitras();
 
 		System.out.println("The final output is");
 		printNodes();
+
+		// for(int i=1; i<=noOfNodes; i++) {
+		// 	System.out.println(i + " : " + nodes[sourceNode][i]);
+		}	
 
 	}
 
@@ -90,7 +108,34 @@ public class LinkState {
 			for(int i=1; i<=noOfNodes; i++) {
 				if(i == sourceNode || !hasNotBeenSelected(i)) 
 					continue;
-				nodes[sourceNode][i] = customMin(nodes[sourceNode][i], nodes[sourceNode][curNode], nodes[curNode][i]);
+				// nodes[sourceNode][i] = customMin(nodes[sourceNode][i], nodes[sourceNode][curNode], nodes[curNode][i]);
+				int v, w, vw;
+				v = nodes[sourceNode][i];
+				w = nodes[sourceNode][curNode];
+				vw = nodes[curNode][i];
+				if(v == -1 && vw == -1){
+					nodes[sourceNode][i] = -1;
+				}
+				else if (v == -1 && vw != -1){
+					if(nodes[curNode][0] != 0)
+						nodes[i][0] = nodes[curNode][0];
+					// if(nodes[0][curNode] == -1)
+					// 	nodes[i][0] = nodes[curNode][0];
+					nodes[sourceNode][i] = w+vw;
+				}
+				else if (v != -1 && vw == -1){
+					nodes[sourceNode][i] = v;
+				}
+				else if(v < w+vw){
+					nodes[sourceNode][i] = v;
+				} else {
+					if(nodes[curNode][0] != 0)
+						nodes[i][0] = nodes[curNode][0];
+					// if(nodes[0][curNode] == -1)
+					// 	nodes[i][0] = nodes[curNode][0];
+					nodes[sourceNode][i] = w+vw;
+				}
+						
 			}
 			printNodes();
 			// System.out.println("Seletected array");
@@ -152,7 +197,8 @@ public class LinkState {
 		// }
 		System.out.println("Current Node : "+ curNode);
 		for(int i=1; i<=noOfNodes; i++) {
-			System.out.println(i + " : " + nodes[sourceNode][i]);
+			// System.out.println(i + " : " + nodes[sourceNode][i]);
+			System.out.println(i + " : " + nodes[i][0]);
 		}
 	}
 
